@@ -1,6 +1,6 @@
 import React from "react";
-import { ProjectIdView } from "../components/project-id-view";
 import { Id } from "../../../../convex/_generated/dataModel";
+import { ProjectIdView } from "@/features/projects/components/project-id-view";
 
 const ProjectIdPage = async ({
   params,
