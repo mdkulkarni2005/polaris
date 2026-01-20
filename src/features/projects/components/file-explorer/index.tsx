@@ -10,38 +10,47 @@ import { useState } from "react";
 import { Id } from "../../../../../convex/_generated/dataModel";
 import { useProject } from "../../hooks/use-projects";
 import { Button } from "@/components/ui/button";
-import { useCreateFile, useCreateFolder } from "../../hooks/use-files";
+import {
+  useCreateFile,
+  useCreateFolder,
+  useFolderContents,
+} from "../../hooks/use-files";
 import { CreateInput } from "./create-input";
+import { LoadingRow } from "./loading-row";
+import { Tree } from "./tree";
 
 export const FileExplorer = ({ projectId }: { projectId: Id<"projects"> }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const project = useProject(projectId);
-
+  
   const [collapseKey, setCollapseKey] = useState(0);
-  const [creating, setCreating] = useState<"file" | "folder" | null>(
-    null
-  );
+  const [creating, setCreating] = useState<"file" | "folder" | null>(null);
+  
+  const project = useProject(projectId);
+  const rootFiles = useFolderContents({
+    projectId,
+    enabled: isOpen,
+  });
 
-  const createFile = useCreateFile()
-  const createFolder = useCreateFolder()
+  const createFile = useCreateFile();
+  const createFolder = useCreateFolder();
   const handleCreate = (name: string) => {
-    setCreating(null)
+    setCreating(null);
 
-    if(creating === "file") {
-        createFile({
-            projectId,
-            name, 
-            content: "",
-            parentId: undefined
-        })
+    if (creating === "file") {
+      createFile({
+        projectId,
+        name,
+        content: "",
+        parentId: undefined,
+      });
     } else {
-        createFolder({
-            projectId,
-            name,
-            parentId: undefined
-        })
+      createFolder({
+        projectId,
+        name,
+        parentId: undefined,
+      });
     }
-  }
+  };
 
   return (
     <div className="h-full bg-sidebar">
@@ -66,7 +75,7 @@ export const FileExplorer = ({ projectId }: { projectId: Id<"projects"> }) => {
                 e.stopPropagation();
                 e.preventDefault();
                 setIsOpen(true);
-                setCreating("file")
+                setCreating("file");
               }}
               variant="highligh"
               size="icon-xs"
@@ -78,7 +87,7 @@ export const FileExplorer = ({ projectId }: { projectId: Id<"projects"> }) => {
                 e.stopPropagation();
                 e.preventDefault();
                 setIsOpen(true);
-                setCreating("folder")
+                setCreating("folder");
               }}
               variant="highligh"
               size="icon-xs"
@@ -89,8 +98,8 @@ export const FileExplorer = ({ projectId }: { projectId: Id<"projects"> }) => {
               onClick={(e) => {
                 e.stopPropagation();
                 e.preventDefault();
-                setCollapseKey((prev) => prev + 1)
-            }}
+                setCollapseKey((prev) => prev + 1);
+              }}
               variant="highligh"
               size="icon-xs"
             >
@@ -99,16 +108,27 @@ export const FileExplorer = ({ projectId }: { projectId: Id<"projects"> }) => {
           </div>
         </div>
         {isOpen && (
-            <>
-                {creating && (
-                    <CreateInput
-                        type={creating}
-                        level={0}
-                        onSubmit={handleCreate}
-                        onCancel={() => {setCreating(null)}}
-                    />
-                )}
-            </>
+          <>
+          {rootFiles === undefined && <LoadingRow level={0} />}
+            {creating && (
+              <CreateInput
+                type={creating}
+                level={0}
+                onSubmit={handleCreate}
+                onCancel={() => {
+                  setCreating(null);
+                }}
+              />
+            )}
+            {rootFiles?.map((item) => (
+              <Tree
+                key={`${item.id}-${collapseKey}`}
+                item={item}
+                level={0}
+                projectId={projectId}
+              />
+            ))}
+          </>
         )}
       </ScrollArea>
     </div>
