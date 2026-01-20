@@ -77,7 +77,7 @@ export const FileExplorer = ({ projectId }: { projectId: Id<"projects"> }) => {
                 setIsOpen(true);
                 setCreating("file");
               }}
-              variant="highligh"
+              variant="highlight"
               size="icon-xs"
             >
               <FilePlusCornerIcon className="size-3.5" />
@@ -89,7 +89,7 @@ export const FileExplorer = ({ projectId }: { projectId: Id<"projects"> }) => {
                 setIsOpen(true);
                 setCreating("folder");
               }}
-              variant="highligh"
+              variant="highlight"
               size="icon-xs"
             >
               <FolderPlusIcon className="size-3.5" />
@@ -100,7 +100,7 @@ export const FileExplorer = ({ projectId }: { projectId: Id<"projects"> }) => {
                 e.preventDefault();
                 setCollapseKey((prev) => prev + 1);
               }}
-              variant="highligh"
+              variant="highlight"
               size="icon-xs"
             >
               <CopyMinusIcon className="size-3.5" />
@@ -122,7 +122,7 @@ export const FileExplorer = ({ projectId }: { projectId: Id<"projects"> }) => {
             )}
             {rootFiles?.map((item) => (
               <Tree
-                key={`${item.id}-${collapseKey}`}
+                key={`${item._id}-${collapseKey}`}
                 item={item}
                 level={0}
                 projectId={projectId}

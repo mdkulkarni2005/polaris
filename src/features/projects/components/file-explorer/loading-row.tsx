@@ -7,7 +7,7 @@ export const LoadingRow = ({
     level = 0,
 }: {
     className?: string
-    level?: string
+    level?: number
 }) => {
     return (
         <div className={cn(
