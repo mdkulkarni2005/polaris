@@ -94,7 +94,28 @@ const renderPlugin = ViewPlugin.fromClass(
   { decorations: (plugin) => plugin.decorations } // Tell CodeMirror to use our decorations
 );
 
+const acceptSuggestionKeymap = keymap.of([
+  {
+    key: "Tab",
+    run: (view) => {
+      const suggestion = view.state.field(suggestionState)
+      if(!suggestion) {
+        return false // No suggestion let Tab do its normal thing(indent)
+      }
+
+      const cursor = view.state.selection.main.head
+      view.dispatch({
+        changes: { from: cursor, insert: suggestion }, // Insert the suggestion text
+        selection: { anchor: cursor + suggestion.length }, // Move cursor to end
+        effects: setSuggestionEffect.of(null) // Clear the suggestion
+      })
+      return true // We handled Tab, don't indent
+    }
+  }
+])
+
 export const suggestion = (fileName: string) => [
   suggestionState, // our state storeage
   renderPlugin, // Render the ghost text
+  acceptSuggestionKeymap, // Tab to accept
 ];
