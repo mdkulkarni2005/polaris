@@ -1,5 +1,6 @@
 "use client";
 
+import { ConversationSidebar } from "@/features/conversations/components/conversation-sidebar";
 import { Id } from "../../../../convex/_generated/dataModel";
 import { Navbar } from "./navbar";
 import { Allotment } from "allotment";
@@ -32,7 +33,7 @@ export const ProjectIdLayout = ({
             maxSize={MAX_SIDEBAR_WIDTH}
             preferredSize={DEFAULT_CONVERSATION_SIDEBAR_WIDTH}
           >
-            <div>Converstaion Sidebar</div>
+           <ConversationSidebar projectId={projectId} />
           </Allotment.Pane>
           <Allotment.Pane>{children}</Allotment.Pane>
         </Allotment>
