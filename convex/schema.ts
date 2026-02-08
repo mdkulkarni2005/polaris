@@ -52,7 +52,7 @@ export default defineSchema({
         v.union(
             v.literal("processing"),
             v.literal("completed"),
-            v.literal("cancelled ")
+            v.literal("cancelled")
         )
     )
   })
