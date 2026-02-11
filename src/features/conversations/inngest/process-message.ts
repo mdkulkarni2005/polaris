@@ -48,7 +48,7 @@ export const processMessage = inngest.createFunction(
         throw new NonRetriableError("POLARIS_CONVEX_INTERNAL_VALUE is not configured")
     }
 
-    await step.sleep("wait-for-ai-processing", '5s')
+    await step.sleep("wait-for-ai-processing", '50 s')
     await step.run("update-assistant-message", async () => {
         await convex.mutation(api.system.updateMessageContent, {
             internalKey, 
