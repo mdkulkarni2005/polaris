@@ -40,7 +40,7 @@ interface ConversationsidebarProps {
 export const ConversationSidebar = ({
   projectId,
 }: ConversationsidebarProps) => {
-  const [input, setInput] = useState("")
+  const [input, setInput] = useState("");
   const [selectedConversationId, setSelectedConversationId] =
     useState<Id<"conversations"> | null>(null);
   const createConversation = useCreateConversation();
@@ -60,13 +60,13 @@ export const ConversationSidebar = ({
 
   const handleCancel = async () => {
     try {
-      await ky.post('/api/messages/cancel', {
-        json: { projectId }
-      })
-    } catch  {
-      toast.error("Unable to cancel request")
+      await ky.post("/api/messages/cancel", {
+        json: { projectId },
+      });
+    } catch {
+      toast.error("Unable to cancel request");
     }
-  }
+  };
 
   const handleCreateConversation = async () => {
     try {
@@ -84,17 +84,17 @@ export const ConversationSidebar = ({
 
   const handleSubmit = async (message: PromptInputMessage) => {
     // IF processing and no new message, this is jsut a stop function
-    if(isProcessing && !message.text) {
-      await handleCancel()
-      setInput("")
-      return 
+    if (isProcessing && !message.text) {
+      await handleCancel();
+      setInput("");
+      return;
     }
     let conversationId = activeConversationId;
 
-    if(!conversationId) {
-      conversationId = await handleCreateConversation()
-      if(!conversationId) {
-        return
+    if (!conversationId) {
+      conversationId = await handleCreateConversation();
+      if (!conversationId) {
+        return;
       }
     }
 
@@ -103,15 +103,15 @@ export const ConversationSidebar = ({
       await ky.post("/api/messages", {
         json: {
           conversationId,
-          message: message.text
-        }
-      })
+          message: message.text,
+        },
+      });
     } catch {
-      toast.error("Message failed to send")
+      toast.error("Message failed to send");
     }
 
-    setInput("")
-  }
+    setInput("");
+  };
 
   return (
     <div className="flex flex-col h-full bg-sidebar">
@@ -142,6 +142,10 @@ export const ConversationSidebar = ({
                     <LoaderIcon className="size-4 animate-spin" />
                     <span>Thinking...</span>
                   </div>
+                ) : message.status === "cancelled" ? (
+                  <span className="text-muted-foreground italic">
+                    Request Cancelled
+                  </span>
                 ) : (
                   <MessageResponse>{message.content}</MessageResponse>
                 )}

@@ -17,13 +17,13 @@ export async function POST(request: Request) {
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  
-  const internalKey = process.env.POLARIS_CONVEX_INTERNAL_VALUE
-  if(!internalKey) {
+
+  const internalKey = process.env.POLARIS_CONVEX_INTERNAL_VALUE;
+  if (!internalKey) {
     return NextResponse.json(
-        { error: "Internal key not configured" },
-        { status: 500 }
-    )
+      { error: "Internal key not configured" },
+      { status: 500 }
+    );
   }
 
   const body = await request.json();
@@ -35,25 +35,52 @@ export async function POST(request: Request) {
     conversationId: conversationId as Id<"conversations">,
   });
 
-  if(!conversation) {
+  if (!conversation) {
     return NextResponse.json(
-        {error: "conversation not found"},
-        {status: 404}
-    )
+      { error: "conversation not found" },
+      { status: 404 }
+    );
   }
 
-  const projectId = conversation.projectId
+  const projectId = conversation.projectId;
 
-  // TODO: Check for processing messages
-  
+  // Find all processing messages in this project
+  const processingMessages = await convex.query(
+    api.system.getProcessingMessages,
+    {
+      internalKey,
+      projectId,
+    }
+  );
+
+  if (processingMessages.length > 0) {
+    // Cancel all processing all message
+    await Promise.all(
+      processingMessages.map(async (msg) => {
+        await inngest.send({
+          name: "message/cancel",
+          data: {
+            messageId: msg._id,
+          },
+        });
+
+        await convex.mutation(api.system.updateMessageStatus, {
+          internalKey,
+          messageId: msg._id,
+          status: "cancelled",
+        });
+      })
+    );
+  }
+
   // Create user message
   await convex.mutation(api.system.createMessage, {
     internalKey,
     conversationId: conversationId as Id<"conversations">,
     projectId,
     role: "user",
-    content: message
-  })
+    content: message,
+  });
 
   // Create assistant message placeholder with processing status
   const assistantMessageId = await convex.mutation(api.system.createMessage, {
@@ -62,23 +89,22 @@ export async function POST(request: Request) {
     projectId,
     role: "assistant",
     content: "",
-    status: "processing"
-  })
+    status: "processing",
+  });
 
-  // TODO: Invoke inngest to process the message
-
+  // Trigger Inngest to process the message
   const event = await inngest.send({
     name: "message/send",
     data: {
-        messageId: assistantMessageId,
-    }
-  })
+      messageId: assistantMessageId,
+    },
+  });
 
   return NextResponse.json({
     success: true,
     eventId: event.ids[0],
     messageId: assistantMessageId,
-  })
+  });
 
   // Invoke Inngest background josb
 }
