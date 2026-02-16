@@ -169,7 +169,7 @@ export const getProjectFiles = query({
 });
 
 // Used for Agent "ReadFiles" tool
-export const getFileId = query({
+export const getFileById = query({
   args: {
     internalKey: v.string(),
     fileId: v.id("files"),
