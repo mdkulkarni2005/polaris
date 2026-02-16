@@ -31,8 +31,8 @@ import {
   useCreateConversation,
   useMessages,
 } from "../hooks/use-conversations";
-import { DEFAULT_CONVERSATION_TITLE } from "../../../../convex/constants";
 import { PastConversationDialog } from "./past-conversations-dialog";
+import { DEFAULT_CONVERSATION_TITLE } from "../constants";
 
 interface ConversationsidebarProps {
   projectId: Id<"projects">;
