@@ -18,7 +18,7 @@ export const createDeleteFilesTool = ({
   internalKey,
 }: DeleteFilesToolOptions) => {
   return createTool({
-    name: "createFiles",
+    name: "deleteFiles",
     description:
       "Delete files or folders from the project. if deleting a folder, all contents will be deleted recursively.",
     parameters: z.object({
