@@ -5,6 +5,8 @@ import { convex } from "@/lib/convex-client";
 import { inngest } from "@/inngest/client";
 import { api } from "../../../../convex/_generated/api";
 import { Doc, Id } from "../../../../convex/_generated/dataModel";
+import { use } from "react";
+import { success } from "zod";
 
 interface ExportToGithubEvent {
   projectId: Id<"projects">;
@@ -94,6 +96,138 @@ export const exportToGithub = inngest.createFunction(
       return ref.object.sha;
     });
 
-    // Fetch 
+    // Fetch all projects files with storage URLs
+    const files = await step.run("fetch-files-files", async () => {
+      return (await convex.query(api.system.getProjectFilesWithUrls, {
+        internalKey,
+        projectId,
+      })) as FileWithUrl[];
+    });
+
+    // Build a map of files IDs to their full paths
+    const buildFilePaths = (files: FileWithUrl[]) => {
+      const fileMap = new Map<Id<"files">, FileWithUrl>();
+      files.forEach((f) => fileMap.set(f._id, f));
+
+      const getFullPath = (file: FileWithUrl): string => {
+        if (!file.parentId) {
+          return file.name;
+        }
+        const parent = fileMap.get(file.parentId);
+        if (!parent) {
+          return file.name;
+        }
+        return `${getFullPath(parent)}/${file.name}`;
+      };
+      const paths: Record<string, FileWithUrl> = {};
+      files.forEach((file) => {
+        paths[getFullPath(file)] = file;
+      });
+      return paths;
+    };
+    const filePaths = buildFilePaths(files);
+
+    //Filter to only actual files (not folders)
+    const fileEntries = Object.entries(filePaths).filter(
+      ([, file]) => file.type === "file",
+    );
+
+    if (fileEntries.length === 0) {
+      throw new NonRetriableError("No files to export");
+    }
+
+    // Create blobs for each file
+    const treeItems = await step.run("create-blobs", async () => {
+      const items: {
+        path: string;
+        mode: "100644";
+        type: "blob";
+        sha: string;
+      }[] = [];
+
+      for (const [path, file] of fileEntries) {
+        let content: string;
+        let encoding: "utf-8" | "base64" = "utf-8";
+
+        if (file.content !== undefined) {
+          // Text file
+          content = file.content;
+        } else if (file.storageUrl) {
+          // Binary file - fetchand base64 encode
+          const response = await ky.get(file.storageUrl);
+          const buffer = Buffer.from(await response.arrayBuffer());
+          content = buffer.toString("base64");
+          encoding = "base64";
+        } else {
+          // Skip files with no content
+          continue;
+        }
+        const { data: blob } = await octokit.rest.git.createBlob({
+          owner: user.login,
+          repo: repoName,
+          content,
+          encoding,
+        });
+
+        items.push({
+          path,
+          mode: "100644",
+          type: "blob",
+          sha: blob.sha,
+        });
+      }
+      return items;
+    });
+
+    if (treeItems.length === 0) {
+      throw new NonRetriableError("Failed to create any file blobs");
+    }
+
+    // Create the tree
+    const { data: tree } = await step.run("create-tree", async () => {
+      return await octokit.rest.git.createTree({
+        owner: user.login,
+        repo: repoName,
+        tree: treeItems,
+      });
+    });
+
+    // Create the commit with the initial commit as parent
+    const { data: commit } = await step.run("create-commit", async () => {
+      return await octokit.rest.git.createCommit({
+        owner: user.login,
+        repo: repoName,
+        message: "Initial commit from Polaris",
+        tree: tree.sha,
+        parents: [initialCommitSha]
+      })
+    })
+
+    // Update the main branch reference to point to our new commit
+    await step.run("update-branch-ref", async () => {
+      return await octokit.rest.git.updateRef({
+        owner: user.login,
+        repo: repoName,
+        ref: "heads/main",
+        sha: commit.sha,
+        force: true,
+      })
+    })
+
+    // Set status to completed with repo URL
+    await step.run("set-completed-status", async () => {
+      await convex.mutation(api.system.updateExportStatus, {
+        internalKey,
+        projectId,
+        status: "completed",
+        repoUrl: repo.html_url
+      })
+    })
+
+    return {
+      success: true,
+      repoUrl: repo.html_url,
+      filesExported: treeItems.length
+    }
   },
 );

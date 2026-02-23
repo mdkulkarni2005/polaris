@@ -549,7 +549,7 @@ export const updateExportStatus = mutation({
   },
 });
 
-export const getProjectFileWithUrls = query({
+export const getProjectFilesWithUrls = query({
   args: {
     internalKey: v.string(),
     projectId: v.id("projects"),
