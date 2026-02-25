@@ -17,6 +17,12 @@ import { Input } from "@/components/ui/input";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Id } from "../../../../convex/_generated/dataModel";
 
+type ImportGithubResponse = {
+  success: boolean;
+  projectId: Id<"projects">;
+  eventId: string;
+};
+
 const formSchema = z.object({
   url: z.url("Please enter a valid URL"),
 });
@@ -40,7 +46,9 @@ export const ImportGithubDialog = ({
       onSubmit: formSchema,
     },
     onSubmit: async ({ value }) => {
-      const { projectId } = await ky
+      try {
+
+        const { projectId } = await ky
         .post("/api/github/import", {
           json: { url: value.url },
         })
@@ -49,6 +57,14 @@ export const ImportGithubDialog = ({
           projectId: Id<"projects">,
           eventId: string;
         }>()
+        toast.success("Importing repository...")
+        onOpenChange(false)
+        form.reset()
+        
+        router.push(`/projects/${projectId}`)
+      } catch {
+
+      }
     },
   });
 };
