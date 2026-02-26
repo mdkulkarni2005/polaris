@@ -1,10 +1,22 @@
 import ky, { HTTPError } from "ky";
-import { boolean, string, success, z } from "zod";
+import { boolean, regex, string, success, z } from "zod";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { useClerk } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
+import { FaGithub } from "react-icons/fa";
+import {
+  CheckCheckIcon,
+  CheckCircle2Icon,
+  ExternalLinkIcon,
+  LoaderIcon,
+  XCircleIcon,
+} from "lucide-react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   Dialog,
   DialogContent,
@@ -16,6 +28,16 @@ import {
 import { Input } from "@/components/ui/input";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Id } from "../../../../convex/_generated/dataModel";
+import React from "react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { useProject } from "../hooks/use-projects";
 
 type ImportGithubResponse = {
   success: boolean;
@@ -24,20 +46,31 @@ type ImportGithubResponse = {
 };
 
 const formSchema = z.object({
-  url: z.url("Please enter a valid URL"),
+  repoName: z
+    .string()
+    .min(1, "Repository name is required")
+    .max(100, "Repository name is too long")
+    regex(
+      /^[a-zA-Z0-9._-]+$/,
+      "Only alphnumeric charcters, hyphens, underscrores, and dots are dots are allowed"
+    ),
+    visibility: z.enum(["public", "private"]),
+    description: z.string().max(350, "Description is too long")
 });
 
-interface ImportGithubDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
+interface ExportPopoverProps {
+  projectId: Id<"projects">
 }
 
-export const ImportGithubDialog = ({
-  open,
-  onOpenChange,
-}: ImportGithubDialogProps) => {
-  const router = useRouter();
+export const ExportPopover = ({
+  projectId
+}: ExportPopoverProps) => {
+  const project = useProject(projectId)
+  const [open, setOpen] = React.useState(false)
   const { openUserProfile } = useClerk();
+
+  const exportStatus = project?.exportStatus
+  const exportRepoUrl = project?.exportRepoUrl
   const form = useForm({
     defaultValues: {
       url: "",
