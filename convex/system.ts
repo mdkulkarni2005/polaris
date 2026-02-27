@@ -589,5 +589,6 @@ export const createProject = mutation({
       updatedAt: Date.now(),
       importStatus: "importing"
     })
+    return projectId;
   }
 })

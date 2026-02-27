@@ -2,7 +2,7 @@ import ky, { HTTPError } from "ky";
 import { boolean, string, success, z } from "zod";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { useForm } from "@tanstack/react-form";
 import { useClerk } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,12 +16,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Id } from "../../../../convex/_generated/dataModel";
-
-type ImportGithubResponse = {
-  success: boolean;
-  projectId: Id<"projects">;
-  eventId: string;
-};
 
 const formSchema = z.object({
   url: z.url("Please enter a valid URL"),
@@ -129,7 +123,7 @@ export const ImportGithubDialog = ({
             >
               Cancel
             </Button>
-            <form.subscribe
+            <form.Subscribe
               selector={(state) => [state.canSubmit, state.isSubmitting]}
             >
               {([canSubmit, isSubmitting]) => (
@@ -137,7 +131,7 @@ export const ImportGithubDialog = ({
                   {isSubmitting ? "Importing..." : "Import"}
                 </Button>
               )}
-            </form.subscribe>
+            </form.Subscribe>
           </DialogFooter>
         </form>
       </DialogContent>
