@@ -148,18 +148,17 @@ export const exportToGithub = inngest.createFunction(
       for (const [path, file] of fileEntries) {
         let content: string;
         let encoding: "utf-8" | "base64" = "utf-8";
+        // Convex getProjectFilesWithUrls returns the download URL in storageId (overwriting the id)
+        const hasStorageIdUrl = typeof file.storageId === "string" && file.storageId.startsWith("http");
 
         if (file.content !== undefined) {
-          // Text file
           content = file.content;
-        } else if (file.storageUrl) {
-          // Binary file - fetchand base64 encode
-          const response = await ky.get(file.storageUrl);
+        } else if (hasStorageIdUrl) {
+          const response = await ky.get(file.storageId as string);
           const buffer = Buffer.from(await response.arrayBuffer());
           content = buffer.toString("base64");
           encoding = "base64";
         } else {
-          // Skip files with no content
           continue;
         }
         const { data: blob } = await octokit.rest.git.createBlob({
