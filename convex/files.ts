@@ -88,7 +88,7 @@ export const getFilePath = query({
   },
 });
 
-export const getFolderContent = query({
+export const getFolderContents = query({
   args: { projectId: v.id("projects"), parentId: v.optional(v.id("files")) },
   handler: async (ctx, args) => {
     const identity = await verifyAuth(ctx);
