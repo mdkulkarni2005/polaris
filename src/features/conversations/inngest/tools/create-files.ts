@@ -45,6 +45,8 @@ export const createCreateFilesTool = ({
         .describe("Array of files to create"),
     }),
     handler: async (params, { step: toolStep }) => {
+      const fileCount = Array.isArray(params?.files) ? params.files.length : 0;
+      console.log("[polaris] Tool: createFiles", { parentId: params?.parentId ?? "root", fileCount });
       const parsed = paramsSchema.safeParse(params);
       if (!parsed.success) {
         return `Error: ${parsed.error.issues[0].message}`;

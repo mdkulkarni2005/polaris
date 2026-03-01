@@ -1,8 +1,8 @@
-import { anthropic } from "@ai-sdk/anthropic";
 import { generateText, Output } from "ai";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { firecrawl } from "@/lib/firecrawl";
+import { getOpenRouterModel } from "@/lib/openrouter";
 import { auth } from "@clerk/nextjs/server";
 
 const quickEditSchema = z.object({
@@ -91,10 +91,10 @@ export async function POST(request: Request) {
       .replace("{documentation}", documentationContext)
 
     const { output } = await generateText({
-      model: anthropic('claude-3-7-sonnet-20250219'),
+      model: getOpenRouterModel(),
       output: Output.object({ schema: quickEditSchema }),
-      prompt
-    })
+      prompt,
+    });
     return NextResponse.json({ editedCode: output.editedCode })
   } catch (error){
     console.log("Edit error:", error)

@@ -322,7 +322,7 @@ export const createFolder = mutation({
     );
 
     if (existing) {
-      throw new Error("Folder alredy exists");
+      return existing._id;
     }
 
     const fileId = await ctx.db.insert("files", {

@@ -27,6 +27,7 @@ export const createDeleteFilesTool = ({
         .describe("Array of file or folder IDs to delete")
     }),
     handler: async (params, { step: toolStep }) => {
+      console.log("[polaris] Tool: deleteFiles", { fileCount: Array.isArray(params?.fileIds) ? params.fileIds.length : 0 });
       const parsed = paramsSchema.safeParse(params);
       if (!parsed.success) {
         return `Error: ${parsed.error.issues[0].message}`;

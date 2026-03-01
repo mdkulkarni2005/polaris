@@ -1,7 +1,7 @@
 import { generateText, Output } from "ai";
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { anthropic } from "@ai-sdk/anthropic";
+import { getOpenRouterModel } from "@/lib/openrouter";
 import { auth } from "@clerk/nextjs/server";
 
 const suggestionSchema = z.object({
@@ -77,11 +77,11 @@ export async function POST(request: Request) {
         .replace("{nextLines}", nextLines || "")
         .replace("{lineNumber}", lineNumber.toString())
 
-    const {output} = await generateText({
-        model: anthropic("claude-3-7-sonnet-20250219"),
-        output: Output.object({ schema: suggestionSchema }),
-        prompt,
-    })
+    const { output } = await generateText({
+      model: getOpenRouterModel(),
+      output: Output.object({ schema: suggestionSchema }),
+      prompt,
+    });
 
     return NextResponse.json({ suggestion: output.suggestion })
   } catch (error) {

@@ -24,6 +24,7 @@ export const createUpdateFileTool = ({
       content: z.string().describe("The new content for the file."),
     }),
     handler: async (params, { step: toolStep }) => {
+      console.log("[polaris] Tool: updateFile", { fileId: params?.fileId });
       const parsed = paramsSchema.safeParse(params);
       if (!parsed.success) {
         return `Error: ${parsed.error.issues[0].message}`;

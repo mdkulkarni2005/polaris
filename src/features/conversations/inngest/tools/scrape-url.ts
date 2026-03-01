@@ -17,6 +17,7 @@ export const createScrapeUrlsTool = () => {
       urls: z.array(z.string()).describe("Array of URLs to scrape for content"),
     }),
     handler: async (params, { step: toolStep }) => {
+      console.log("[polaris] Tool: scrapeUrls", { urlCount: Array.isArray(params?.urls) ? params.urls.length : 0 });
       const parsed = paramsSchema.safeParse(params);
       if (!parsed.success) {
         return `Error: ${parsed.error.issues[0].message}`;

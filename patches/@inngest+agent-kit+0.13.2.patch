@@ -1,0 +1,58 @@
+diff --git a/node_modules/@inngest/agent-kit/dist/chunk-BSWKEFTT.js b/node_modules/@inngest/agent-kit/dist/chunk-BSWKEFTT.js
+index 50538d4..be99473 100644
+--- a/node_modules/@inngest/agent-kit/dist/chunk-BSWKEFTT.js
++++ b/node_modules/@inngest/agent-kit/dist/chunk-BSWKEFTT.js
+@@ -548,22 +548,39 @@ var responseParser2 = (input) => {
+   }, []);
+ };
+ var safeParseOpenAIJson = (str) => {
+-  const trimmed = str.replace(/^["']|["']$/g, "");
+-  try {
+-    return JSON.parse(trimmed);
+-  } catch (e) {
++  const trimmed = str.replace(/^["']|["']$/g, "").trim();
++  const tryParse = (s) => {
+     try {
+-      const withQuotes = trimmed.replace(
+-        /`([\s\S]*?)`/g,
+-        (_, content) => JSON.stringify(content)
+-      );
+-      return JSON.parse(withQuotes);
+-    } catch (e2) {
+-      throw new Error(
+-        `Failed to parse JSON with backticks: ${stringifyError(e2)}`
+-      );
++      return JSON.parse(s);
++    } catch (_) {
++      return null;
+     }
+-  }
++  };
++  let out = tryParse(trimmed);
++  if (out !== null) return out;
++  const withQuotes = trimmed.replace(
++    /`([\s\S]*?)`/g,
++    (_, content) => JSON.stringify(content)
++  );
++  out = tryParse(withQuotes);
++  if (out !== null) return out;
++  const noMarkdown = trimmed.replace(/^```(?:json)?\s*([\s\S]*?)\s*```$/m, "$1").trim();
++  out = tryParse(noMarkdown);
++  if (out !== null) return out;
++  const noTrailingComma = trimmed.replace(/,(\s*[}\]])/g, "$1");
++  out = tryParse(noTrailingComma);
++  if (out !== null) return out;
++  const noTrailingCommaQuotes = withQuotes.replace(/,(\s*[}\]])/g, "$1");
++  out = tryParse(noTrailingCommaQuotes);
++  if (out !== null) return out;
++  try {
++    const { jsonrepair: repair } = require("jsonrepair");
++    out = tryParse(repair(trimmed));
++    if (out !== null) return out;
++  } catch (_) {}
++  throw new Error(
++    "Failed to parse JSON with backticks: Expected ',' or '}' after property value in JSON - model returned malformed tool arguments. Try rephrasing or use a model with better tool-use support."
++  );
+ };
+ var openAiStopReasonToStateStopReason = {
+   tool_calls: "tool",

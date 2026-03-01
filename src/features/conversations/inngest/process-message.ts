@@ -8,7 +8,8 @@ import {
   TITLE_GENERATOR_SYSTEM_PROMPT,
 } from "./constants";
 import { DEFAULT_CONVERSATION_TITLE } from "../constants";
-import { createAgent, anthropic, createNetwork } from "@inngest/agent-kit";
+import { createAgent, createNetwork, openai } from "@inngest/agent-kit";
+import { OPENROUTER_MODEL_ID } from "@/lib/openrouter";
 import { createReadFilesTool } from "./tools/read-files";
 import { createListFilesTool } from "./tools/list-files";
 import { createUpdateFileTool } from "./tools/update-files";
@@ -28,6 +29,10 @@ interface MessageEvent {
 export const processMessage = inngest.createFunction(
   {
     id: "process-message",
+    timeouts: {
+      start: "2m",
+      finish: "8m",
+    },
     cancelOn: [
       {
         event: "message/cancel",
@@ -114,8 +119,10 @@ export const processMessage = inngest.createFunction(
       const titleAgent = createAgent({
         name: "title-generator",
         system: TITLE_GENERATOR_SYSTEM_PROMPT,
-        model: anthropic({
-          model: "claude-haiku-4-5-20251001",
+        model: openai({
+          model: OPENROUTER_MODEL_ID,
+          baseUrl: "https://openrouter.ai/api/v1",
+          apiKey: process.env.OPENROUTER_API_KEY,
           defaultParameters: { temperature: 0, max_tokens: 50 },
         }),
       });
@@ -149,9 +156,11 @@ export const processMessage = inngest.createFunction(
       name: "polaris",
       description: "An expert AI coding assistant",
       system: systemPrompt,
-      model: anthropic({
-        model: "claude-opus-4-20250514",
-        defaultParameters: { temperature: 0.3, max_tokens: 16000 },
+      model: openai({
+        model: OPENROUTER_MODEL_ID,
+        baseUrl: "https://openrouter.ai/api/v1",
+        apiKey: process.env.OPENROUTER_API_KEY,
+        defaultParameters: { temperature: 0.3, max_tokens: 4096 },
       }),
       tools: [
         createListFilesTool({ projectId, internalKey }),
@@ -170,7 +179,7 @@ export const processMessage = inngest.createFunction(
     const network = createNetwork({
       name: "polaris-network",
       agents: [codingAgent],
-      maxIter: 20,
+      maxIter: 12,
       router: ({ network }) => {
         const lastResult = network.state.results.at(-1);
         const hasTextResponse = lastResult?.output.some(
@@ -190,7 +199,10 @@ export const processMessage = inngest.createFunction(
     });
 
     // Run the agent
+    console.log("[process-message] Starting coding agent (max 12 iterations), message length:", message?.length ?? 0);
     const results = await network.run(message);
+    const iterCount = results.state.results.length;
+    console.log("[process-message] Agent finished. Iterations:", iterCount);
 
     // Extract the assistant's text response from the last agent result
     const lastResult = results.state.results.at(-1);

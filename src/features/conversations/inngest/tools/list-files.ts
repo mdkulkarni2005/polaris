@@ -19,6 +19,7 @@ export const createListFilesTool = ({
       "List all files and folders in the project. Returns names, IDs, types, and parentId for each item. Items with parentId: null are at root level. Use the parentId to understand the folder structure - items with the same parentId are in the same folder",
     parameters: z.object({}),
     handler: async (_, { step: toolStep }) => {
+      console.log("[polaris] Tool: listFiles");
       try {
         return await toolStep?.run("list-files", async () => {
           const files = await convex.query(api.system.getProjectFiles, {
