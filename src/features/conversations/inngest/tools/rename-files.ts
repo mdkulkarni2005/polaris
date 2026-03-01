@@ -24,7 +24,7 @@ export const createRenameFileTool = ({
       content: z.string().describe("The new name for the file or folder."),
     }),
     handler: async (params, { step: toolStep }) => {
-      console.log("[polaris] Tool: renameFile", { fileId: params?.fileId, newName: params?.newName ?? params?.content });
+      console.log("[polaris] Tool: renameFile", { fileId: params?.fileId });
       const parsed = paramsSchema.safeParse(params);
       if (!parsed.success) {
         return `Error: ${parsed.error.issues[0].message}`;

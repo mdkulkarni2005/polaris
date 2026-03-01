@@ -123,7 +123,7 @@ export const processMessage = inngest.createFunction(
           model: OPENROUTER_MODEL_ID,
           baseUrl: "https://openrouter.ai/api/v1",
           apiKey: process.env.OPENROUTER_API_KEY,
-          defaultParameters: { temperature: 0, max_tokens: 50 },
+          defaultParameters: { temperature: 0, max_completion_tokens: 50 },
         }),
       });
       const { output } = await titleAgent.run(message, { step });
@@ -160,7 +160,7 @@ export const processMessage = inngest.createFunction(
         model: OPENROUTER_MODEL_ID,
         baseUrl: "https://openrouter.ai/api/v1",
         apiKey: process.env.OPENROUTER_API_KEY,
-        defaultParameters: { temperature: 0.3, max_tokens: 4096 },
+        defaultParameters: { temperature: 0.3, max_completion_tokens: 4096 },
       }),
       tools: [
         createListFilesTool({ projectId, internalKey }),
