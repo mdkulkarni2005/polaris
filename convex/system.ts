@@ -599,6 +599,14 @@ export const createProjectWithConversation = mutation({
     projectName: v.string(),
     conversationTitle: v.string(),
     ownerId: v.string(),
+    creationStack: v.optional(
+      v.object({
+        framework: v.string(),
+        language: v.string(),
+        packageManager: v.string(),
+      })
+    ),
+    initialPrompt: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     validateInternalKey(args.internalKey);
@@ -609,6 +617,8 @@ export const createProjectWithConversation = mutation({
       name: args.projectName,
       ownerId: args.ownerId,
       updatedAt: now,
+      ...(args.creationStack && { creationStack: args.creationStack }),
+      ...(args.initialPrompt !== undefined && args.initialPrompt !== "" && { initialPrompt: args.initialPrompt }),
     });
 
     const conversationId = await ctx.db.insert("conversations", {

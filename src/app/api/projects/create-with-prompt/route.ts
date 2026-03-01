@@ -12,8 +12,16 @@ import { convex } from "@/lib/convex-client";
 import { api } from "../../../../../convex/_generated/api";
 import { DEFAULT_CONVERSATION_TITLE } from "@/features/conversations/constants";
 
+const creationStackSchema = z.object({
+  framework: z.string(),
+  language: z.string(),
+  packageManager: z.string(),
+});
+
 const requestSchema = z.object({
   prompt: z.string().min(1),
+  creationStack: z.optional(creationStackSchema),
+  initialPrompt: z.optional(z.string()),
 });
 
 export async function POST(request: Request) {
@@ -32,7 +40,7 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json();
-  const { prompt } = requestSchema.parse(body);
+  const { prompt, creationStack, initialPrompt } = requestSchema.parse(body);
 
   // Generate a random project name
   const projectName = uniqueNamesGenerator({
@@ -41,7 +49,7 @@ export async function POST(request: Request) {
     length: 3,
   });
 
-  // Create project and conversation together
+  // Create project and conversation together (with optional stack + prompt for history)
   const { projectId, conversationId } = await convex.mutation(
     api.system.createProjectWithConversation,
     {
@@ -49,6 +57,8 @@ export async function POST(request: Request) {
       projectName,
       conversationTitle: DEFAULT_CONVERSATION_TITLE,
       ownerId: userId,
+      ...(creationStack && Object.values(creationStack).some(Boolean) && { creationStack }),
+      initialPrompt: initialPrompt ?? undefined,
     }
   );
 

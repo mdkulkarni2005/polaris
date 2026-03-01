@@ -27,7 +27,16 @@ export default defineSchema({
         installCommand: v.optional(v.string()),
         devCommand: v.optional(v.string())
       })
-    )
+    ),
+    // Track how the project was created (stack + user prompt) for history
+    creationStack: v.optional(
+      v.object({
+        framework: v.string(),
+        language: v.string(),
+        packageManager: v.string(),
+      })
+    ),
+    initialPrompt: v.optional(v.string()),
   }).index("by_owner", ["ownerId"]),
 
   files: defineTable({

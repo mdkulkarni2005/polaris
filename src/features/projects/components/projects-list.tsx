@@ -39,6 +39,22 @@ const formatTimestamp = (timestamp: number) => {
   return formatDistanceToNow(new Date(timestamp), { addSuffix: true });
 };
 
+function CreationHistory({ project }: { project: Doc<"projects"> }) {
+  const stack = project.creationStack;
+  const prompt = project.initialPrompt;
+  if (!stack && !prompt) return null;
+  const parts: string[] = [];
+  if (stack?.framework && stack.framework !== "Any") parts.push(stack.framework);
+  if (stack?.language && stack.language !== "Any") parts.push(stack.language);
+  if (stack?.packageManager && stack.packageManager !== "Any") parts.push(stack.packageManager);
+  const stackLine = parts.length > 0 ? parts.join(" · ") : null;
+  return (
+    <span className="text-xs text-muted-foreground line-clamp-1">
+      {stackLine && prompt ? `${stackLine} — ${prompt}` : stackLine ?? prompt}
+    </span>
+  );
+}
+
 const ContinueCard = ({ data }: { data: Doc<"projects"> }) => {
   return (
     <div className="flex flex-col gap-2">
@@ -50,11 +66,14 @@ const ContinueCard = ({ data }: { data: Doc<"projects"> }) => {
       >
         <Link href={`/projects/${data._id}`} className="group">
           <div className="flex items-center justify-between w-full">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 min-w-0">
               {getProjectIcon(data)}
-              <span className="font-medium truncate">{data.name}</span>
+              <div className="min-w-0 flex-1">
+                <span className="font-medium truncate block">{data.name}</span>
+                <CreationHistory project={data} />
+              </div>
             </div>
-            <ArrowRightIcon className="size-4 text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
+            <ArrowRightIcon className="size-4 text-muted-foreground group-hover:translate-x-0.5 transition-transform shrink-0" />
           </div>
           <span className="text-xs text-muted-foreground">
             {formatTimestamp(data.updatedAt)}
@@ -68,14 +87,17 @@ const ContinueCard = ({ data }: { data: Doc<"projects"> }) => {
 const ProjectItem = ({ data }: { data: Doc<"projects"> }) => {
   return (
     <Link
-      className="text-sm text-foreground/80 font-medium hover:text-foreground py-2 px-2 rounded-lg hover:bg-accent/30 flex items-center justify-between w-full group transition-colors"
+      className="text-sm text-foreground/80 font-medium hover:text-foreground py-2 px-2 rounded-lg hover:bg-accent/30 flex items-center justify-between w-full group transition-colors gap-2"
       href={`/projects/${data._id}`}
     >
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 min-w-0 flex-1">
         {getProjectIcon(data)}
-        <span className="truncate">{data.name}</span>
+        <div className="min-w-0 flex-1">
+          <span className="truncate block">{data.name}</span>
+          <CreationHistory project={data} />
+        </div>
       </div>
-      <span className="text-xs text-muted-foreground group-hover:text-foreground/80 transition-colors">
+      <span className="text-xs text-muted-foreground group-hover:text-foreground/80 transition-colors shrink-0">
         {formatDistanceToNow(data.updatedAt)}
       </span>
     </Link>
