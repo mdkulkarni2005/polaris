@@ -39,7 +39,7 @@ const getProjectIcon = (project: Doc<"projects">) => {
 export const ProjectsCommandDialog = ({
   open,
   onOpenChange,
-}: ProjectsCommandDialog) => {
+}: ProjectsCommandDialogProps) => {
   const router = useRouter();
   const projects = useProjects();
 

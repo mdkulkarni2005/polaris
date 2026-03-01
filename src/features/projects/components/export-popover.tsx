@@ -212,7 +212,7 @@ export const ExportPopover = ({
                     aria-invalid={isInvalid}
                     placeholder="my-project"
                   />
-                  {isInvalid && <FieldError errors={field.state.meta.error}/>}
+                  {isInvalid && <FieldError errors={field.state.meta.errors} />}
                 </Field>
               )
             }}
@@ -262,13 +262,13 @@ export const ExportPopover = ({
                     placeholder="A short description of your project"
                     rows={2}
                   />
-                  {isInvalid && <FieldError errors={field.state.meta.error}/>}
+                  {isInvalid && <FieldError errors={field.state.meta.errors} />}
                 </Field>
               )
             }}
           </form.Field>
 
-          <form.Subscribe selector={(state) => [state.canSubmit, state.inSubmitting]}>
+          <form.Subscribe selector={(state) => [state.canSubmit, state.isSubmitting]}>
             {([canSubmit, isSubmitting]) => (
               <Button type="submit" size="sm" className="w-full" disabled={!canSubmit || isSubmitting}>
                 {isSubmitting ? "Creating..." : "Create Repository"}

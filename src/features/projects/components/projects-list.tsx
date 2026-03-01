@@ -32,7 +32,7 @@ const getProjectIcon = (project: Doc<"projects">) => {
 };
 
 interface ProjectsListProps {
-  onViewAll: () => {};
+  onViewAll: () => void;
 }
 
 const formatTimestamp = (timestamp: number) => {

@@ -31,7 +31,7 @@ export const PreviewSettingsPopover = ({
   projectId,
   initialValues,
   onSave,
-}: PreviewSettingsPopover) => {
+}: PreviewSettingsPopoverProps) => {
   const [open, setOpen] = useState(false);
   const updateSettings = useUpdateProjectSettings();
 
