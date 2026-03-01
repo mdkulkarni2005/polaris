@@ -69,7 +69,9 @@ const featureColorClasses = {
     borderHover: "hover:border-amber-500/40",
     glow: "group-hover:shadow-[0_0_24px_-4px_rgba(245,158,11,0.25)]",
   },
-};
+} as const;
+
+type FeatureColorKey = keyof typeof featureColorClasses;
 
 export const UnathenticatedView = () => {
   return (
@@ -148,7 +150,7 @@ export const UnathenticatedView = () => {
           </p>
           <ul className="mt-12 grid gap-6 sm:grid-cols-2">
             {features.map(({ icon: Icon, title, description, color }) => {
-              const c = featureColorClasses[color];
+              const c = featureColorClasses[color as FeatureColorKey];
               return (
                 <li
                   key={title}

@@ -14,6 +14,7 @@ export const EXAMPLE_PROMPTS = [
     title: "React + Vite",
     description: "Single-page app with Vite",
     prompt: "Scaffold a React 18 + TypeScript project with Vite. Include a main App with a header and a counter component using useState.",
+    icon: Code2Icon,
   },
   {
     title: "FastAPI backend",
