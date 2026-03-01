@@ -42,11 +42,11 @@ const formatTimestamp = (timestamp: number) => {
 const ContinueCard = ({ data }: { data: Doc<"projects"> }) => {
   return (
     <div className="flex flex-col gap-2">
-      <span className="text-xs text-shadow-muted-foreground">Last updated</span>
+      <span className="text-xs text-muted-foreground">Last updated</span>
       <Button
         variant="outline"
         asChild
-        className="h-auto items-start justify-start p-4 bg-background border rotate-none flex flex-col gap-2"
+        className="h-auto items-start justify-start p-4 rounded-xl border-l-4 border-l-border bg-card/50 border border-border hover:bg-accent/30 flex flex-col gap-2"
       >
         <Link href={`/projects/${data._id}`} className="group">
           <div className="flex items-center justify-between w-full">
@@ -68,14 +68,14 @@ const ContinueCard = ({ data }: { data: Doc<"projects"> }) => {
 const ProjectItem = ({ data }: { data: Doc<"projects"> }) => {
   return (
     <Link
-      className="text-sm text-foreground/60 font-medium hover:text-foreground py-1 flex items-center justify-between w-full group:"
+      className="text-sm text-foreground/80 font-medium hover:text-foreground py-2 px-2 rounded-lg hover:bg-accent/30 flex items-center justify-between w-full group transition-colors"
       href={`/projects/${data._id}`}
     >
       <div className="flex items-center gap-2">
         {getProjectIcon(data)}
         <span className="truncate">{data.name}</span>
       </div>
-      <span className="text-xs text-muted-foreground group-hover:text-foreground/60 transition-colors">
+      <span className="text-xs text-muted-foreground group-hover:text-foreground/80 transition-colors">
         {formatDistanceToNow(data.updatedAt)}
       </span>
     </Link>
@@ -97,12 +97,12 @@ export const ProjectsList = ({ onViewAll }: ProjectsListProps) => {
       {rest.length > 0 && (
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between gap-2">
-            <span className="text-xs text-muted-foreground">
+            <span className="text-xs font-medium text-muted-foreground">
               Recent projects
             </span>
-            <button onClick={onViewAll} className="flex items-center gap-2 to-muted-foreground text-xs hover:text-foreground transition-colors">
+            <button onClick={onViewAll} className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors">
               <span>View All</span>
-              <Kbd className="bg-accent border">⌘K</Kbd>
+              <Kbd className="bg-muted border-border text-muted-foreground">⌘K</Kbd>
             </button>
           </div>
           <ul className="flex flex-col">

@@ -25,15 +25,23 @@ import { Id } from "../../../../convex/_generated/dataModel";
 interface NewProjectDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  initialPrompt?: string;
 }
 
 export const NewProjectDialog = ({
   open,
   onOpenChange,
+  initialPrompt,
 }: NewProjectDialogProps) => {
   const router = useRouter();
   const [input, setInput] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      setInput(initialPrompt ?? "");
+    }
+  }, [open, initialPrompt]);
 
   const handleSubmit = async (message: PromptInputMessage) => {
     if (!message.text) return;
